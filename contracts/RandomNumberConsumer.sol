@@ -55,9 +55,8 @@ contract RandomNumberConsumer is VRFConsumerBase, Ownable {
 
     /**
      * @dev Public function for request randomness from a user-provided seed and returns request Id. This function can be called by only apporved games.
-     * @param _userProvidedSeed Number of seed. Any number can be.
      */
-    function requestRandomNumber(uint256 _userProvidedSeed)
+    function requestRandomNumber()
         public
         onlyULP
         returns (bytes32 requestID)
@@ -68,7 +67,7 @@ contract RandomNumberConsumer is VRFConsumerBase, Ownable {
         );
         emit randomNumberArrived(false, randomNumber);
         uint256 rand = requestToRandom[currentRequestID];
-        currentRequestID = requestRandomness(keyHash, fee, _userProvidedSeed);
+        currentRequestID = requestRandomness(keyHash, fee, 2021);
         requestToRandom[currentRequestID] = rand;
         return currentRequestID;
     }
