@@ -15,7 +15,6 @@ contract RandomNumberConsumer is VRFConsumerBase, Ownable {
     bytes32 internal keyHash;
     uint256 internal fee;
 
-    uint256 private randomNumber;
     address private ULPAddress;
 
     bytes32 currentRequestID;
