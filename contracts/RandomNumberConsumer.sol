@@ -20,6 +20,9 @@ contract RandomNumberConsumer is VRFConsumerBase, Ownable {
     bytes32 currentRequestID;
     mapping(bytes32 => uint256) requestToRandom;
 
+    /// @notice Event emitted when ULP address is changed
+    event newULP(address ULP);
+
     /// @notice Event emitted when chainlink verified random number arrived.
     event randomNumberArrived(bool arrived, uint256 number);
 
@@ -105,5 +108,6 @@ contract RandomNumberConsumer is VRFConsumerBase, Ownable {
             "RNG: This is not a Contract Address"
         );
         ULPAddress = _ulpAddr;
+        emit newULP(ULPAdress);
     }
 }
