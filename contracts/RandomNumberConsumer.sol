@@ -15,7 +15,7 @@ contract RandomNumberConsumer is VRFConsumerBase, Ownable {
     bytes32 internal keyHash;
     uint256 internal fee;
 
-    address private ULPAddress;
+    address public ULPAddress;
 
     bytes32 currentRequestID;
     mapping(bytes32 => uint256) requestToRandom;
@@ -67,8 +67,8 @@ contract RandomNumberConsumer is VRFConsumerBase, Ownable {
             LINK.balanceOf(address(this)) >= fee,
             "Not enough LINK - fill contract with faucet"
         );
-        emit randomNumberArrived(false, randomNumber);
         uint256 rand = requestToRandom[currentRequestID];
+        emit randomNumberArrived(false, rand);
         currentRequestID = requestRandomness(keyHash, fee, 2021);
         requestToRandom[currentRequestID] = rand;
         return currentRequestID;
@@ -83,7 +83,7 @@ contract RandomNumberConsumer is VRFConsumerBase, Ownable {
         override
     {
         requestToRandom[requestID] = _randomness;
-        emit randomNumberArrived(true, randomNumber);
+        emit randomNumberArrived(true, _randomness);
     }
 
     /**
@@ -108,6 +108,6 @@ contract RandomNumberConsumer is VRFConsumerBase, Ownable {
             "RNG: This is not a Contract Address"
         );
         ULPAddress = _ulpAddr;
-        emit newULP(ULPAdress);
+        emit newULP(ULPAddress);
     }
 }
