@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.6;
 
-import "@chainlink/contracts/src/v0.8/dev/VRFConsumerBase.sol";
+import "@chainlink/contracts/src/v0.8/VRFConsumerBase.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 
@@ -69,7 +69,7 @@ contract RandomNumberConsumer is VRFConsumerBase, Ownable {
         );
         uint256 rand = requestToRandom[currentRequestID];
         emit randomNumberArrived(false, rand);
-        currentRequestID = requestRandomness(keyHash, fee, 2021);
+        currentRequestID = requestRandomness(keyHash, fee);
         requestToRandom[currentRequestID] = rand;
         return currentRequestID;
     }
