@@ -19,12 +19,12 @@ contract RandomNumberConsumer is VRFConsumerBase, Ownable {
 
     bytes32 currentRequestID;
     mapping(bytes32 => uint256) requestToRandom;
-
+    mapping(byte32 => bool) hasReturned;
     /// @notice Event emitted when ULP address is changed
     event newULP(address ULP);
 
     /// @notice Event emitted when chainlink verified random number arrived.
-    event randomNumberArrived(bool arrived, uint256 number);
+    event randomNumberArrived(bool arrived, byte32 batchID);
 
     modifier onlyULP() {
         require(ULPAddress == msg.sender, "RNG: Caller is not the ULP address");
@@ -71,6 +71,7 @@ contract RandomNumberConsumer is VRFConsumerBase, Ownable {
         emit randomNumberArrived(false, rand);
         currentRequestID = requestRandomness(keyHash, fee);
         requestToRandom[currentRequestID] = rand;
+        hasReturned[currentRequestID]= false;
         return currentRequestID;
     }
 
@@ -82,8 +83,10 @@ contract RandomNumberConsumer is VRFConsumerBase, Ownable {
         internal
         override
     {
+        
         requestToRandom[requestID] = _randomness;
-        emit randomNumberArrived(true, _randomness);
+        hasReturned[requestID] = true;
+        emit randomNumberArrived(true, requestID);
     }
 
     /**
@@ -95,6 +98,7 @@ contract RandomNumberConsumer is VRFConsumerBase, Ownable {
         onlyULP
         returns (uint256)
     {
+        require(hasReturned[activeID] == true, "Random not Received");
         return requestToRandom[activeID];
     }
 
