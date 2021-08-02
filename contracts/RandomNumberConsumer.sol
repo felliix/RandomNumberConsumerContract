@@ -18,13 +18,19 @@ contract RandomNumberConsumer is VRFConsumerBase, Ownable {
     address public ULPAddress;
 
     bytes32 currentRequestID;
+
     mapping(bytes32 => uint256) requestToRandom;
-    mapping(byte32 => bool) hasReturned;
+    mapping(bytes32 => bool) hasReturned;
+
     /// @notice Event emitted when ULP address is changed
     event newULP(address ULP);
 
     /// @notice Event emitted when chainlink verified random number arrived.
-    event randomNumberArrived(bool arrived, byte32 batchID);
+    event randomNumberArrived(
+        bool arrived,
+        uint256 randomNumber,
+        bytes32 batchID
+    );
 
     modifier onlyULP() {
         require(ULPAddress == msg.sender, "RNG: Caller is not the ULP address");
@@ -56,22 +62,21 @@ contract RandomNumberConsumer is VRFConsumerBase, Ownable {
     }
 
     /**
-     * @dev Public function for request randomness from a user-provided seed and returns request Id. This function can be called by only apporved games.
+     * @dev Public function to request randomness and returns request Id. This function can be called by only apporved games.
      */
-    function requestRandomNumber()
-        public
-        onlyULP
-        returns (bytes32 requestID)
-    {
+    function requestRandomNumber() public onlyULP returns (bytes32 requestID) {
         require(
             LINK.balanceOf(address(this)) >= fee,
-            "Not enough LINK - fill contract with faucet"
+            "RandomNumberConsumer: Not enough LINK - fill contract with faucet"
         );
-        uint256 rand = requestToRandom[currentRequestID];
-        emit randomNumberArrived(false, rand);
+
+        uint256 prevRandomNumber = requestToRandom[currentRequestID];
+
+        emit randomNumberArrived(false, prevRandomNumber, requestID);
+
         currentRequestID = requestRandomness(keyHash, fee);
-        requestToRandom[currentRequestID] = rand;
-        hasReturned[currentRequestID]= false;
+        hasReturned[currentRequestID] = false;
+
         return currentRequestID;
     }
 
@@ -83,33 +88,36 @@ contract RandomNumberConsumer is VRFConsumerBase, Ownable {
         internal
         override
     {
-        
         requestToRandom[requestID] = _randomness;
         hasReturned[requestID] = true;
-        emit randomNumberArrived(true, requestID);
+        emit randomNumberArrived(true, _randomness, requestID);
     }
 
     /**
-     * @dev Public function for returning verified random number. This function can be called by only ULP.
+     * @dev Public function to return verified random number. This function can be called by only ULP.
+     * @param _reqeustId Batching Id of random number.
      */
-    function getVerifiedRandomNumber(bytes32 activeID)
+    function getVerifiedRandomNumber(bytes32 _reqeustId)
         public
         view
         onlyULP
         returns (uint256)
     {
-        require(hasReturned[activeID] == true, "Random not Received");
-        return requestToRandom[activeID];
+        require(
+            hasReturned[_reqeustId] == true,
+            "RandomNumberConsumer: Random number is not arrived yet"
+        );
+        return requestToRandom[_reqeustId];
     }
 
     /**
-     * @dev Public function for setting ULP address. This function can be called by only owner.
+     * @dev Public function to set ULP address. This function can be called by only owner.
      * @param _ulpAddr Address of ULP
      */
     function setULPAddress(address _ulpAddr) public onlyOwner {
         require(
             _ulpAddr.isContract() == true,
-            "RNG: This is not a Contract Address"
+            "RandomNumberConsumer: This is not a Contract Address"
         );
         ULPAddress = _ulpAddr;
         emit newULP(ULPAddress);
