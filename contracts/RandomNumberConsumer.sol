@@ -72,7 +72,7 @@ contract RandomNumberConsumer is VRFConsumerBase, Ownable {
 
         uint256 prevRandomNumber = requestToRandom[currentRequestID];
 
-        emit randomNumberArrived(false, prevRandomNumber, requestID);
+        emit randomNumberArrived(false, prevRandomNumber, currentRequestID);
 
         currentRequestID = requestRandomness(keyHash, fee);
         hasReturned[currentRequestID] = false;
